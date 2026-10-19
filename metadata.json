@@ -1,0 +1,6 @@
+{
+  "name": "Caosómetro · Letmino for Teams",
+  "description": "¿Qué necesita aprender tu equipo de verdad? 6 cartas de habilidades, decisiones rápidas y el diagnóstico formativo perfecto.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
