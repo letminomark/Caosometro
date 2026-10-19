@@ -8,7 +8,7 @@ import { SYM, LETMINO_LOGO_PATH } from './symbols';
 
 // ===== Configuración =====
 const CTA_URL =
-  'https://teams.letmino.ai/signup?_gl=1*imeqn9*_ga*NTcyNDI4NTMyLjE3ODc3NTA1MzU.*_ga_08M7S0LRBF*czE3OTIwNDYwNjUkbzU2JGcxJHQxNzkyMDQ2NTUyJGo2MCRsMCRoMA..*_gcl_au*MjExNDc5NTk4LjE3ODc4OTkxMzIuMjc2MzA2MC4xNzkxNDc0NDYzLjE3OTE0NzQ0NjIuMTIxMDMzODU5NC4xNzkxNDcyMzgzLjE3OTE0NzQ0NjI.*_ga_77RYVYDJ50*czE3OTIwNDYwNjUkbzQ5JGcxJHQxNzkyMDQ2NTUyJGo2MCRsMCRoMA..*_ga_28GW8LC69L*czE3OTIwNDYwNjUkbzM1JGcxJHQxNzkyMDQ2NTUyJGo2MCRsMCRoMA..';
+  'https://teams.letmino.ai/signup?utm_source=caosometro&utm_medium=matchinteractivo&utm_campaign=teams_lanzamiento_es';
 
 const C = {
   azul: '#4995FF',
@@ -46,8 +46,8 @@ const CARDS: CardItem[] = [
     sym: 'fl',
   },
   {
-    id: 'impact',
-    area: 'Impacto',
+    id: 'datos',
+    area: 'Análisis de datos',
     text: 'Saber medir e interpretar los datos',
     aside: 'Que no se quede en una tabla de números que nadie entienda.',
     bg: C.amarillo,
@@ -96,9 +96,18 @@ export default function App() {
   const [isDragging, setIsDragging] = useState<boolean>(false);
   const [exitDirection, setExitDirection] = useState<'left' | 'right' | 'up' | null>(null);
 
+  const [gameUrl, setGameUrl] = useState<string>('');
+
   const dragStartRef = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
   const mainRef = useRef<HTMLElement>(null);
   const shareRef = useRef<HTMLParagraphElement>(null);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const cleanUrl = window.location.href.split('?')[0].split('#')[0];
+      setGameUrl(cleanUrl);
+    }
+  }, []);
 
   // Scroll to top when arriving at result screen
   useEffect(() => {
@@ -227,9 +236,26 @@ export default function App() {
   const displayCards = selectedCards.length > 0 ? selectedCards : CARDS.slice(0, 3);
 
   const topAreas = Array.from(new Set(displayCards.map((c) => c.area))).slice(0, 3);
-  const shareContent = `Hemos completado el Caosómetro de Letmino para nuestro equipo. Nuestras prioridades clave: ${topAreas.join(
-    ', '
-  )}. ¿Cuáles son las de tu equipo?`;
+
+  const getChaosDiagnosis = (urgentCount: number) => {
+    if (urgentCount === 0) return 'Caos bajo control. Por ahora.';
+    if (urgentCount <= 2) return 'Caos moderado. Se nota los lunes.';
+    if (urgentCount <= 4) return 'Caos alto. Hay prioridades esperando turno.';
+    return 'Caos máximo. Todo es para ayer.';
+  };
+
+  const formatAreas = (areas: string[]) => {
+    if (areas.length === 0) return 'Productividad, Análisis de datos y Finanzas';
+    if (areas.length === 1) return areas[0];
+    if (areas.length === 2) return `${areas[0]} y ${areas[1]}`;
+    return `${areas.slice(0, -1).join(', ')} y ${areas[areas.length - 1]}`;
+  };
+
+  const shareLink =
+    gameUrl || (typeof window !== 'undefined' ? window.location.href.split('?')[0].split('#')[0] : 'https://caosometro.letmino.ai');
+  const shareContent = `Nuestro match en el Caosómetro de Letmino: ${formatAreas(
+    topAreas
+  )}. ¿Y el de tu equipo? Descúbrelo en 1 minuto: ${shareLink}`;
 
   // Render progress segments
   const renderSegs = () => {
@@ -494,17 +520,105 @@ export default function App() {
               <span className="label" style={{ color: 'var(--muted)' }}>
                 Resultado del match
               </span>
-              <div className="score">
-                <strong style={{ color: C.verde }}>{selectedCards.length}</strong>
-                <span className="mono" style={{ fontSize: '16px' }}>
-                  / {CARDS.length} habilidades con match
-                </span>
-              </div>
-              <span className="body">
-                {selectedCards.length === 0
-                  ? 'No marcaste ninguna habilidad como urgente, pero hemos preparado las 3 áreas recomendadas para comenzar.'
-                  : `${urgentCards.length} urgente${urgentCards.length === 1 ? '' : 's'} y ${matchCards.length} con match prioritario.`}
-              </span>
+              {selectedCards.length === 0 ? (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                  <h2
+                    style={{
+                      fontFamily: 'var(--display)',
+                      fontSize: '22px',
+                      fontWeight: 600,
+                      color: 'var(--blanco)',
+                      margin: '4px 0 0',
+                      letterSpacing: '-0.02em',
+                    }}
+                  >
+                    Nada te convenció. Equipo exigente.
+                  </h2>
+                  <span className="body" style={{ color: 'var(--muted)' }}>
+                    Te dejamos tres áreas por donde empezar.
+                  </span>
+                  <div style={{ marginTop: '6px' }}>
+                    <span
+                      className="mono"
+                      style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '6px',
+                        fontSize: '12px',
+                        fontWeight: 500,
+                        padding: '5px 12px',
+                        borderRadius: '9999px',
+                        background: 'var(--negro-08)',
+                        border: '1px solid var(--negro-15)',
+                        color: C.verde,
+                      }}
+                    >
+                      <span
+                        style={{
+                          width: '6px',
+                          height: '6px',
+                          borderRadius: '50%',
+                          background: C.verde,
+                        }}
+                      />
+                      {getChaosDiagnosis(0)}
+                    </span>
+                  </div>
+                </div>
+              ) : (
+                <>
+                  <div className="score">
+                    <strong style={{ color: C.verde }}>{selectedCards.length}</strong>
+                    <span className="mono" style={{ fontSize: '16px' }}>
+                      / {CARDS.length} habilidades con match
+                    </span>
+                  </div>
+                  <div style={{ marginTop: '8px', marginBottom: '4px' }}>
+                    <span
+                      className="mono"
+                      style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '6px',
+                        fontSize: '12px',
+                        fontWeight: 500,
+                        padding: '5px 12px',
+                        borderRadius: '9999px',
+                        background: 'var(--negro-08)',
+                        border: '1px solid var(--negro-15)',
+                        color:
+                          urgentCards.length >= 5
+                            ? C.naranja
+                            : urgentCards.length >= 3
+                            ? C.amarillo
+                            : urgentCards.length >= 1
+                            ? C.azul
+                            : C.verde,
+                      }}
+                    >
+                      <span
+                        style={{
+                          width: '6px',
+                          height: '6px',
+                          borderRadius: '50%',
+                          background:
+                            urgentCards.length >= 5
+                              ? C.naranja
+                              : urgentCards.length >= 3
+                              ? C.amarillo
+                              : urgentCards.length >= 1
+                              ? C.azul
+                              : C.verde,
+                        }}
+                      />
+                      {getChaosDiagnosis(urgentCards.length)}
+                    </span>
+                  </div>
+                  <span className="body">
+                    {urgentCards.length} urgente{urgentCards.length === 1 ? '' : 's'} y {matchCards.length} con match.
+                  </span>
+                </>
+              )}
             </section>
 
             <section className="section divider">
@@ -516,6 +630,7 @@ export default function App() {
                 {displayCards.map((card, idx) => {
                   const cardVote = votes[CARDS.findIndex((c) => c.id === card.id)];
                   const isUrgent = cardVote === 2;
+                  const isMatch = cardVote === 1;
 
                   return (
                     <div key={idx} className="match-item">
@@ -525,7 +640,21 @@ export default function App() {
                             {card.area}
                           </span>
                           {isUrgent && <span className="match-badge urgent">Urgente</span>}
-                          {cardVote === 1 && <span className="match-badge match">Match</span>}
+                          {isMatch && <span className="match-badge match">Match</span>}
+                          {!isUrgent && !isMatch && (
+                            <span
+                              className="mono"
+                              style={{
+                                fontSize: '11px',
+                                padding: '2px 8px',
+                                borderRadius: '4px',
+                                background: 'var(--negro-15)',
+                                color: 'var(--blanco-10)',
+                              }}
+                            >
+                              Sugerida
+                            </span>
+                          )}
                         </div>
                         <span className="match-item-title">{card.text}</span>
                         <span style={{ fontSize: '13px', color: 'var(--muted)' }}>
